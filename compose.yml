@@ -1,0 +1,44 @@
+services:
+  dhis2-db:
+    image: postgis/postgis:13-3.3
+    container_name: dhis2-db
+    environment:
+      POSTGRES_DB: dhis2
+      POSTGRES_USER: dhis
+      POSTGRES_PASSWORD: dhis
+    volumes:
+      - dhis2_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - dhis2-network
+
+  dhis2-core:
+    image: dhis2/core:2.40.7
+    container_name: dhis2-core
+    environment:
+      DHIS2_DATABASE_HOST: dhis2-db
+      DHIS2_DATABASE_PORT: 5432
+      DHIS2_DATABASE_NAME: dhis2
+      DHIS2_DATABASE_USERNAME: dhis
+      DHIS2_DATABASE_PASSWORD: dhis
+      DHIS2_AUDIT_DATABASE_HOST: dhis2-db
+      DHIS2_AUDIT_DATABASE_PORT: 5432
+      DHIS2_AUDIT_DATABASE_NAME: dhis2
+      DHIS2_AUDIT_DATABASE_USERNAME: dhis
+      DHIS2_AUDIT_DATABASE_PASSWORD: dhis
+    ports:
+      - "8080:8080"
+    depends_on:
+      - dhis2-db
+    networks:
+      - dhis2-network
+    volumes:
+      - ./config/dhis.conf:/opt/dhis2/dhis.conf
+
+volumes:
+  dhis2_db_data:
+
+networks:
+  dhis2-network:
+    driver: bridge
